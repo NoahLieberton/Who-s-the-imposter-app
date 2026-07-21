@@ -5,7 +5,7 @@ import { startRound } from './gameLogic'
 const DEFAULT_CONFIG: GameConfig = {
   numPlayers: 4,
   numImposters: 1,
-  category: 'random',
+  categories: [],
   discussionTimerEnabled: true,
   discussionTimerSeconds: 90,
 }
@@ -13,7 +13,7 @@ const DEFAULT_CONFIG: GameConfig = {
 function initialPlayers(numPlayers: number): Player[] {
   return Array.from({ length: numPlayers }, (_, i) => ({
     id: `player-${i}`,
-    name: `Speler ${i + 1}`,
+    name: '',
   }))
 }
 

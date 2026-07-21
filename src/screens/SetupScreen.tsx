@@ -1,5 +1,5 @@
 import { CATEGORY_LABELS } from '../data/wordCategories'
-import type { GameConfig } from '../types'
+import type { ConcreteCategory, GameConfig } from '../types'
 import { Button } from '../components/Button'
 
 interface SetupScreenProps {
@@ -13,6 +13,15 @@ const MAX_PLAYERS = 10
 
 export function SetupScreen({ config, onChange, onNext }: SetupScreenProps) {
   const maxImposters = Math.max(1, config.numPlayers - 1)
+
+  function toggleCategory(key: ConcreteCategory) {
+    const isSelected = config.categories.includes(key)
+    onChange({
+      categories: isSelected
+        ? config.categories.filter((c) => c !== key)
+        : [...config.categories, key],
+    })
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -56,24 +65,27 @@ export function SetupScreen({ config, onChange, onNext }: SetupScreenProps) {
       </div>
 
       <div className="rounded-2xl bg-white p-5 shadow-sm">
-        <span className="font-semibold text-slate-700">Categorie</span>
+        <span className="font-semibold text-slate-700">Categorieën</span>
+        <p className="mt-1 text-sm text-slate-500">
+          Selecteer er een of meer. Niets geselecteerd = willekeurig uit alles.
+        </p>
         <div className="mt-3 grid grid-cols-2 gap-2">
           <button
-            onClick={() => onChange({ category: 'random' })}
+            onClick={() => onChange({ categories: [] })}
             className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
-              config.category === 'random'
+              config.categories.length === 0
                 ? 'bg-violet-600 text-white'
                 : 'bg-violet-50 text-violet-700'
             }`}
           >
-            🎲 Willekeurig
+            🎲 Willekeurig (alles)
           </button>
           {Object.entries(CATEGORY_LABELS).map(([key, label]) => (
             <button
               key={key}
-              onClick={() => onChange({ category: key as GameConfig['category'] })}
+              onClick={() => toggleCategory(key as ConcreteCategory)}
               className={`rounded-xl px-3 py-2 text-sm font-medium transition ${
-                config.category === key
+                config.categories.includes(key as ConcreteCategory)
                   ? 'bg-violet-600 text-white'
                   : 'bg-violet-50 text-violet-700'
               }`}

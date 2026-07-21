@@ -13,6 +13,13 @@ export function PlayerNamesScreen({ players, onChange, onBack, onNext }: PlayerN
     onChange(players.map((p) => (p.id === id ? { ...p, name } : p)))
   }
 
+  function handleStart() {
+    onChange(
+      players.map((p, i) => ({ ...p, name: p.name.trim() === '' ? `Speler ${i + 1}` : p.name.trim() })),
+    )
+    onNext()
+  }
+
   return (
     <div className="flex flex-col gap-6">
       <div className="text-center">
@@ -26,7 +33,7 @@ export function PlayerNamesScreen({ players, onChange, onBack, onNext }: PlayerN
             key={player.id}
             value={player.name}
             placeholder={`Speler ${i + 1}`}
-            onChange={(e) => updateName(player.id, e.target.value || `Speler ${i + 1}`)}
+            onChange={(e) => updateName(player.id, e.target.value)}
             className="rounded-xl border-2 border-violet-100 bg-white px-4 py-3 text-lg outline-none focus:border-violet-400"
           />
         ))}
@@ -36,7 +43,7 @@ export function PlayerNamesScreen({ players, onChange, onBack, onNext }: PlayerN
         <Button variant="secondary" onClick={onBack}>
           Terug
         </Button>
-        <Button onClick={onNext}>Start ronde</Button>
+        <Button onClick={handleStart}>Start ronde</Button>
       </div>
     </div>
   )

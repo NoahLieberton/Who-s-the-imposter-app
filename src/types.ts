@@ -7,8 +7,6 @@ export type ConcreteCategory =
   | 'films-series'
   | 'voorwerpen'
 
-export type Category = ConcreteCategory | 'random'
-
 export interface Player {
   id: string
   name: string
@@ -17,7 +15,8 @@ export interface Player {
 export interface GameConfig {
   numPlayers: number
   numImposters: number
-  category: Category
+  /** Categories eligible for the round. Empty means any category. */
+  categories: ConcreteCategory[]
   discussionTimerEnabled: boolean
   discussionTimerSeconds: number
 }

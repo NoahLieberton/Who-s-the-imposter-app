@@ -1,5 +1,5 @@
 import { WORD_CATEGORIES } from '../data/wordCategories'
-import type { Category, ConcreteCategory, GameConfig, Player, RoundData, Vote } from '../types'
+import type { ConcreteCategory, GameConfig, Player, RoundData, Vote } from '../types'
 
 export function shuffle<T>(arr: T[]): T[] {
   const result = [...arr]
@@ -10,10 +10,11 @@ export function shuffle<T>(arr: T[]): T[] {
   return result
 }
 
-export function pickCategory(category: Category): ConcreteCategory {
-  if (category !== 'random') return category
-  const categories = Object.keys(WORD_CATEGORIES) as ConcreteCategory[]
-  return categories[Math.floor(Math.random() * categories.length)]
+export function pickCategory(selectedCategories: ConcreteCategory[]): ConcreteCategory {
+  const pool = selectedCategories.length > 0
+    ? selectedCategories
+    : (Object.keys(WORD_CATEGORIES) as ConcreteCategory[])
+  return pool[Math.floor(Math.random() * pool.length)]
 }
 
 export function pickSecretWord(category: ConcreteCategory): string {
@@ -27,7 +28,7 @@ export function assignImposters(players: Player[], numImposters: number): string
 }
 
 export function startRound(players: Player[], config: GameConfig): RoundData {
-  const categoryUsed = pickCategory(config.category)
+  const categoryUsed = pickCategory(config.categories)
   return {
     secretWord: pickSecretWord(categoryUsed),
     categoryUsed,
