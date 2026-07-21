@@ -110,6 +110,11 @@ export function DiscussionScreen({
         </div>
       )}
 
+      <p className="max-w-xs text-xs text-slate-400">
+        Winnen: de crew wint als de meest gestemde speler écht de imposter is. Bij een fout of
+        een gelijke stand ontsnapt de imposter.
+      </p>
+
       <Button onClick={onStartVoting}>Start stemronde</Button>
     </div>
   )

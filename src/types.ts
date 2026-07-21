@@ -12,6 +12,11 @@ export interface Player {
   name: string
 }
 
+export interface WordPair {
+  word: string
+  hint: string
+}
+
 export interface GameConfig {
   numPlayers: number
   numImposters: number
@@ -50,4 +55,6 @@ export interface GameState {
   currentVoterIndex: number
   votes: Vote[]
   startingPlayerId: string | null
+  /** Cumulative points per player id, across rounds with the same players. */
+  score: Record<string, number>
 }

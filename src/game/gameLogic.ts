@@ -1,5 +1,8 @@
 import { WORD_CATEGORIES } from '../data/wordCategories'
-import type { ConcreteCategory, GameConfig, Player, RoundData, Vote } from '../types'
+import type { ConcreteCategory, GameConfig, Player, RoundData, Vote, WordPair } from '../types'
+
+export const CREW_WIN_POINTS = 1
+export const IMPOSTER_WIN_POINTS = 2
 
 export function shuffle<T>(arr: T[]): T[] {
   const result = [...arr]
@@ -17,15 +20,10 @@ export function pickCategory(selectedCategories: ConcreteCategory[]): ConcreteCa
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
-export function pickSecretWord(category: ConcreteCategory): string {
-  const words = WORD_CATEGORIES[category]
-  return words[Math.floor(Math.random() * words.length)]
-}
-
-export function pickHintWord(category: ConcreteCategory, secretWord: string): string {
-  const candidates = WORD_CATEGORIES[category].filter((w) => w !== secretWord)
-  const pool = candidates.length > 0 ? candidates : WORD_CATEGORIES[category]
-  return pool[Math.floor(Math.random() * pool.length)]
+export function pickWordPair(category: ConcreteCategory): WordPair {
+  const pairs = WORD_CATEGORIES[category]
+  const pair = pairs[Math.floor(Math.random() * pairs.length)]
+  return Math.random() < 0.5 ? pair : { word: pair.hint, hint: pair.word }
 }
 
 export function assignImposters(players: Player[], numImposters: number): string[] {
@@ -39,11 +37,11 @@ export function pickStartingPlayer(players: Player[]): string {
 
 export function startRound(players: Player[], config: GameConfig): RoundData {
   const categoryUsed = pickCategory(config.categories)
-  const secretWord = pickSecretWord(categoryUsed)
+  const { word, hint } = pickWordPair(categoryUsed)
   return {
-    secretWord,
+    secretWord: word,
     categoryUsed,
-    hintWord: pickHintWord(categoryUsed, secretWord),
+    hintWord: hint,
     imposterIds: assignImposters(players, config.numImposters),
   }
 }
@@ -70,4 +68,29 @@ export function computeResult(
   const tie = mostVotedIds.length !== 1
   const correct = !tie && round.imposterIds.includes(mostVotedIds[0])
   return { correct, tie }
+}
+
+/**
+ * Win rule: crew wins the round (and scores) only if the single most-voted
+ * player is an imposter. A tie or a wrong guess both count as the
+ * imposter(s) escaping, so they score instead.
+ */
+export function roundPointsFor(isImposter: boolean, correct: boolean): number {
+  if (correct) return isImposter ? 0 : CREW_WIN_POINTS
+  return isImposter ? IMPOSTER_WIN_POINTS : 0
+}
+
+export function applyRoundScore(
+  score: Record<string, number>,
+  players: Player[],
+  round: RoundData,
+  votes: Vote[],
+): Record<string, number> {
+  const { correct } = computeResult(round, getMostVotedPlayerIds(tallyVotes(votes)))
+  const next = { ...score }
+  for (const p of players) {
+    const points = roundPointsFor(round.imposterIds.includes(p.id), correct)
+    next[p.id] = (next[p.id] ?? 0) + points
+  }
+  return next
 }

@@ -89,6 +89,7 @@ function App() {
                 players={state.players}
                 round={state.round}
                 votes={state.votes}
+                score={state.score}
                 onPlayAgain={() => dispatch({ type: 'RESTART_SAME_PLAYERS' })}
                 onNewGame={() => dispatch({ type: 'RESET_ALL' })}
               />

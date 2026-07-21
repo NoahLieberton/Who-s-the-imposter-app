@@ -1,6 +1,13 @@
 import { motion } from 'framer-motion'
 import { CATEGORY_LABELS } from '../data/wordCategories'
-import { computeResult, getMostVotedPlayerIds, tallyVotes } from '../game/gameLogic'
+import {
+  CREW_WIN_POINTS,
+  IMPOSTER_WIN_POINTS,
+  computeResult,
+  getMostVotedPlayerIds,
+  roundPointsFor,
+  tallyVotes,
+} from '../game/gameLogic'
 import type { Player, RoundData, Vote } from '../types'
 import { Button } from '../components/Button'
 import { Confetti } from '../components/Confetti'
@@ -9,6 +16,7 @@ interface ResultsScreenProps {
   players: Player[]
   round: RoundData
   votes: Vote[]
+  score: Record<string, number>
   onPlayAgain: () => void
   onNewGame: () => void
 }
@@ -17,10 +25,20 @@ function nameFor(players: Player[], id: string): string {
   return players.find((p) => p.id === id)?.name ?? '?'
 }
 
-export function ResultsScreen({ players, round, votes, onPlayAgain, onNewGame }: ResultsScreenProps) {
+export function ResultsScreen({
+  players,
+  round,
+  votes,
+  score,
+  onPlayAgain,
+  onNewGame,
+}: ResultsScreenProps) {
   const tally = tallyVotes(votes)
   const mostVotedIds = getMostVotedPlayerIds(tally)
   const { correct, tie } = computeResult(round, mostVotedIds)
+  const rankedPlayers = [...players].sort(
+    (a, b) => (score[b.id] ?? 0) - (score[a.id] ?? 0),
+  )
 
   return (
     <div className="flex flex-col gap-6">
@@ -50,6 +68,13 @@ export function ResultsScreen({ players, round, votes, onPlayAgain, onNewGame }:
         <h2 className="mt-3 text-2xl font-extrabold">
           {tie ? 'Onbeslist!' : correct ? 'De imposter is gepakt!' : 'De imposter is ontsnapt!'}
         </h2>
+        <p className="mt-2 text-sm text-white/90">
+          {tie
+            ? `Geen duidelijke meerderheid, dus de imposter(s) ontsnappen (+${IMPOSTER_WIN_POINTS} punten).`
+            : correct
+              ? `De meest gestemde speler was echt de imposter. Elke crew-speler krijgt +${CREW_WIN_POINTS} punt.`
+              : `De meest gestemde speler was onschuldig. De imposter(s) ontsnappen (+${IMPOSTER_WIN_POINTS} punten).`}
+        </p>
       </motion.div>
 
       {[
@@ -83,6 +108,31 @@ export function ResultsScreen({ players, round, votes, onPlayAgain, onNewGame }:
                   <span className="font-semibold">{tally[p.id] ?? 0}</span>
                 </li>
               ))}
+            </ul>
+          ),
+        },
+        {
+          label: 'Stand (totaalscore)',
+          labelClass: 'text-emerald-600',
+          content: (
+            <ul className="mt-2 flex flex-col gap-1">
+              {rankedPlayers.map((p, i) => {
+                const points = roundPointsFor(round.imposterIds.includes(p.id), correct)
+                return (
+                  <li key={p.id} className="flex items-center justify-between text-slate-700">
+                    <span>
+                      {i === 0 && (score[p.id] ?? 0) > 0 ? '🏆 ' : ''}
+                      {p.name}
+                    </span>
+                    <span className="flex items-center gap-2">
+                      {points > 0 && (
+                        <span className="text-xs font-semibold text-emerald-600">+{points}</span>
+                      )}
+                      <span className="font-bold text-slate-900">{score[p.id] ?? 0}</span>
+                    </span>
+                  </li>
+                )
+              })}
             </ul>
           ),
         },

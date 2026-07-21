@@ -1,6 +1,6 @@
 import { useReducer } from 'react'
 import type { GameConfig, GameState, Player, Vote } from '../types'
-import { pickStartingPlayer, startRound } from './gameLogic'
+import { applyRoundScore, pickStartingPlayer, startRound } from './gameLogic'
 
 const DEFAULT_CONFIG: GameConfig = {
   numPlayers: 4,
@@ -39,6 +39,7 @@ function initialState(): GameState {
     currentVoterIndex: 0,
     votes: [],
     startingPlayerId: null,
+    score: {},
   }
 }
 
@@ -101,7 +102,8 @@ function reducer(state: GameState, action: Action): GameState {
       const votes = [...state.votes, action.vote]
       const nextVoterIndex = state.currentVoterIndex + 1
       if (nextVoterIndex >= state.players.length) {
-        return { ...state, votes, screen: 'results', currentVoterIndex: nextVoterIndex }
+        const score = applyRoundScore(state.score, state.players, state.round!, votes)
+        return { ...state, votes, screen: 'results', currentVoterIndex: nextVoterIndex, score }
       }
       return { ...state, votes, currentVoterIndex: nextVoterIndex }
     }
