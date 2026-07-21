@@ -29,6 +29,7 @@ export interface Vote {
 export interface RoundData {
   secretWord: string
   categoryUsed: ConcreteCategory
+  hintWord: string
   imposterIds: string[]
 }
 
@@ -48,4 +49,5 @@ export interface GameState {
   currentRevealIndex: number
   currentVoterIndex: number
   votes: Vote[]
+  startingPlayerId: string | null
 }

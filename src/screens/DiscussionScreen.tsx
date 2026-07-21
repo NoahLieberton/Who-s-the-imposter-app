@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { CATEGORY_LABELS } from '../data/wordCategories'
-import type { GameConfig, RoundData } from '../types'
+import type { GameConfig, Player, RoundData } from '../types'
 import { Button } from '../components/Button'
 
 interface DiscussionScreenProps {
   round: RoundData
   config: GameConfig
+  players: Player[]
+  startingPlayerId: string | null
   onStartVoting: () => void
 }
 
@@ -15,10 +17,17 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-export function DiscussionScreen({ round, config, onStartVoting }: DiscussionScreenProps) {
+export function DiscussionScreen({
+  round,
+  config,
+  players,
+  startingPlayerId,
+  onStartVoting,
+}: DiscussionScreenProps) {
   const [secondsLeft, setSecondsLeft] = useState(config.discussionTimerSeconds)
   const [running, setRunning] = useState(false)
   const intervalRef = useRef<number | null>(null)
+  const startingPlayer = players.find((p) => p.id === startingPlayerId)
 
   useEffect(() => {
     if (!running) return
@@ -45,6 +54,12 @@ export function DiscussionScreen({ round, config, onStartVoting }: DiscussionScr
         </h2>
         <p className="mt-2 text-slate-500">Bespreek het woord zonder het te verklappen</p>
       </div>
+
+      {startingPlayer && (
+        <div className="rounded-2xl bg-amber-100 px-5 py-3 text-amber-800">
+          🎲 <span className="font-semibold">{startingPlayer.name}</span> begint met discussiëren!
+        </div>
+      )}
 
       {config.discussionTimerEnabled && (
         <div className="flex flex-col items-center gap-4">

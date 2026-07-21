@@ -22,16 +22,28 @@ export function pickSecretWord(category: ConcreteCategory): string {
   return words[Math.floor(Math.random() * words.length)]
 }
 
+export function pickHintWord(category: ConcreteCategory, secretWord: string): string {
+  const candidates = WORD_CATEGORIES[category].filter((w) => w !== secretWord)
+  const pool = candidates.length > 0 ? candidates : WORD_CATEGORIES[category]
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
 export function assignImposters(players: Player[], numImposters: number): string[] {
   const count = Math.min(Math.max(numImposters, 1), players.length - 1)
   return shuffle(players.map((p) => p.id)).slice(0, count)
 }
 
+export function pickStartingPlayer(players: Player[]): string {
+  return players[Math.floor(Math.random() * players.length)].id
+}
+
 export function startRound(players: Player[], config: GameConfig): RoundData {
   const categoryUsed = pickCategory(config.categories)
+  const secretWord = pickSecretWord(categoryUsed)
   return {
-    secretWord: pickSecretWord(categoryUsed),
+    secretWord,
     categoryUsed,
+    hintWord: pickHintWord(categoryUsed, secretWord),
     imposterIds: assignImposters(players, config.numImposters),
   }
 }

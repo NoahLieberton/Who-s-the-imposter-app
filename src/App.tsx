@@ -42,6 +42,8 @@ function App() {
           <DiscussionScreen
             round={state.round}
             config={state.config}
+            players={state.players}
+            startingPlayerId={state.startingPlayerId}
             onStartVoting={() => dispatch({ type: 'START_VOTING' })}
           />
         )}

@@ -1,6 +1,6 @@
 import { useReducer } from 'react'
 import type { GameConfig, GameState, Player, Vote } from '../types'
-import { startRound } from './gameLogic'
+import { pickStartingPlayer, startRound } from './gameLogic'
 
 const DEFAULT_CONFIG: GameConfig = {
   numPlayers: 4,
@@ -26,6 +26,7 @@ function initialState(): GameState {
     currentRevealIndex: 0,
     currentVoterIndex: 0,
     votes: [],
+    startingPlayerId: null,
   }
 }
 
@@ -63,11 +64,17 @@ function reducer(state: GameState, action: Action): GameState {
         currentRevealIndex: 0,
         currentVoterIndex: 0,
         votes: [],
+        startingPlayerId: null,
       }
     case 'ADVANCE_REVEAL': {
       const nextIndex = state.currentRevealIndex + 1
       if (nextIndex >= state.players.length) {
-        return { ...state, screen: 'discussion', currentRevealIndex: nextIndex }
+        return {
+          ...state,
+          screen: 'discussion',
+          currentRevealIndex: nextIndex,
+          startingPlayerId: pickStartingPlayer(state.players),
+        }
       }
       return { ...state, currentRevealIndex: nextIndex }
     }
@@ -91,6 +98,7 @@ function reducer(state: GameState, action: Action): GameState {
         currentRevealIndex: 0,
         currentVoterIndex: 0,
         votes: [],
+        startingPlayerId: null,
       }
     case 'RESET_ALL':
       return initialState()

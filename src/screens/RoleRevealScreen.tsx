@@ -49,8 +49,11 @@ export function RoleRevealScreen({
               <p className="mt-2 text-rose-100">
                 Categorie: <span className="font-semibold">{CATEGORY_LABELS[round.categoryUsed]}</span>
               </p>
-              <p className="mt-1 text-sm text-rose-100">
-                Jij kent het woord niet. Doe alsof en probeer niet op te vallen!
+              <p className="mt-1 text-rose-100">
+                Hint: <span className="font-semibold">{round.hintWord}</span>
+              </p>
+              <p className="mt-2 text-sm text-rose-100">
+                Jij kent het echte woord niet. Doe alsof en probeer niet op te vallen!
               </p>
             </div>
           ) : (
