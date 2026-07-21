@@ -17,6 +17,18 @@ function initialPlayers(numPlayers: number): Player[] {
   }))
 }
 
+function resizePlayers(players: Player[], numPlayers: number): Player[] {
+  if (numPlayers === players.length) return players
+  if (numPlayers < players.length) return players.slice(0, numPlayers)
+  return [
+    ...players,
+    ...Array.from({ length: numPlayers - players.length }, (_, i) => ({
+      id: `player-${players.length + i}`,
+      name: '',
+    })),
+  ]
+}
+
 function initialState(): GameState {
   return {
     screen: 'setup',
@@ -33,6 +45,7 @@ function initialState(): GameState {
 type Action =
   | { type: 'SET_CONFIG'; config: Partial<GameConfig> }
   | { type: 'GO_TO_PLAYERS' }
+  | { type: 'GO_TO_SETUP' }
   | { type: 'SET_PLAYERS'; players: Player[] }
   | { type: 'START_ROUND' }
   | { type: 'ADVANCE_REVEAL' }
@@ -48,12 +61,14 @@ function reducer(state: GameState, action: Action): GameState {
       const config = { ...state.config, ...action.config }
       const players =
         config.numPlayers !== state.config.numPlayers
-          ? initialPlayers(config.numPlayers)
+          ? resizePlayers(state.players, config.numPlayers)
           : state.players
       return { ...state, config, players }
     }
     case 'GO_TO_PLAYERS':
       return { ...state, screen: 'players' }
+    case 'GO_TO_SETUP':
+      return { ...state, screen: 'setup' }
     case 'SET_PLAYERS':
       return { ...state, players: action.players }
     case 'START_ROUND':

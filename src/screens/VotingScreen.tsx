@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import type { Player } from '../types'
 import { PassDeviceCard } from '../components/PassDeviceCard'
 
@@ -24,30 +25,51 @@ export function VotingScreen({ players, currentVoterIndex, onVote }: VotingScree
         Stem {currentVoterIndex + 1} van {players.length}
       </p>
 
-      {!revealed ? (
-        <PassDeviceCard
-          playerName={voter.name}
-          prompt="Geef de telefoon door aan"
-          onReveal={() => setRevealed(true)}
-        />
-      ) : (
-        <div className="flex flex-col gap-6">
-          <h2 className="text-center text-2xl font-bold text-slate-900">
-            Op wie stemt <span className="text-violet-700">{voter.name}</span>?
-          </h2>
-          <div className="grid grid-cols-2 gap-3">
-            {players.map((p) => (
-              <button
-                key={p.id}
-                onClick={() => onVote(p.id)}
-                className="rounded-2xl bg-white px-4 py-6 text-lg font-semibold text-slate-800 shadow-sm transition active:scale-95 hover:bg-violet-50"
-              >
-                {p.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <AnimatePresence mode="wait">
+        {!revealed ? (
+          <motion.div
+            key="cover"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.25 }}
+          >
+            <PassDeviceCard
+              playerName={voter.name}
+              prompt="Geef de telefoon door aan"
+              onReveal={() => setRevealed(true)}
+            />
+          </motion.div>
+        ) : (
+          <motion.div
+            key="vote"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.3, ease: 'easeOut' }}
+            className="flex flex-col gap-6"
+          >
+            <h2 className="text-center text-2xl font-bold text-slate-900">
+              Op wie stemt <span className="text-violet-700">{voter.name}</span>?
+            </h2>
+            <div className="grid grid-cols-2 gap-3">
+              {players.map((p, i) => (
+                <motion.button
+                  key={p.id}
+                  onClick={() => onVote(p.id)}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.04, duration: 0.25 }}
+                  whileTap={{ scale: 0.93 }}
+                  whileHover={{ scale: 1.03 }}
+                  className="rounded-2xl bg-white px-4 py-6 text-lg font-semibold text-slate-800 shadow-sm hover:bg-violet-50"
+                >
+                  {p.name}
+                </motion.button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

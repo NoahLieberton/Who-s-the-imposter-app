@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { CATEGORY_LABELS } from '../data/wordCategories'
 import type { GameConfig, Player, RoundData } from '../types'
 import { Button } from '../components/Button'
@@ -10,6 +11,8 @@ interface DiscussionScreenProps {
   startingPlayerId: string | null
   onStartVoting: () => void
 }
+
+const URGENT_THRESHOLD = 10
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -28,6 +31,7 @@ export function DiscussionScreen({
   const [running, setRunning] = useState(false)
   const intervalRef = useRef<number | null>(null)
   const startingPlayer = players.find((p) => p.id === startingPlayerId)
+  const isUrgent = running && secondsLeft <= URGENT_THRESHOLD && secondsLeft > 0
 
   useEffect(() => {
     if (!running) return
@@ -56,16 +60,34 @@ export function DiscussionScreen({
       </div>
 
       {startingPlayer && (
-        <div className="rounded-2xl bg-amber-100 px-5 py-3 text-amber-800">
-          🎲 <span className="font-semibold">{startingPlayer.name}</span> begint met discussiëren!
-        </div>
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8, rotate: -20 }}
+          animate={{ opacity: 1, scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+          className="rounded-2xl bg-amber-100 px-5 py-3 text-amber-800"
+        >
+          <motion.span
+            animate={{ rotate: [0, 15, -15, 15, 0] }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="inline-block"
+          >
+            🎲
+          </motion.span>{' '}
+          <span className="font-semibold">{startingPlayer.name}</span> begint met discussiëren!
+        </motion.div>
       )}
 
       {config.discussionTimerEnabled && (
         <div className="flex flex-col items-center gap-4">
-          <div className="text-6xl font-mono font-bold text-violet-700">
+          <motion.div
+            animate={isUrgent ? { scale: [1, 1.08, 1] } : { scale: 1 }}
+            transition={isUrgent ? { duration: 1, repeat: Infinity } : {}}
+            className={`text-6xl font-mono font-bold transition-colors ${
+              isUrgent ? 'text-rose-600' : 'text-violet-700'
+            }`}
+          >
             {formatTime(secondsLeft)}
-          </div>
+          </motion.div>
           <div className="flex gap-3">
             <Button
               variant="secondary"
