@@ -58,6 +58,7 @@ function App() {
                 round={state.round}
                 currentRevealIndex={state.currentRevealIndex}
                 onAdvance={() => dispatch({ type: 'ADVANCE_REVEAL' })}
+                onPrevious={() => dispatch({ type: 'PREVIOUS_REVEAL' })}
               />
             )}
 
@@ -81,6 +82,7 @@ function App() {
                     vote: { voterId: state.players[state.currentVoterIndex].id, votedForId },
                   })
                 }
+                onPrevious={() => dispatch({ type: 'PREVIOUS_VOTE' })}
               />
             )}
 

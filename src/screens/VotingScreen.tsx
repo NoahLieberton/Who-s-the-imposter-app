@@ -7,9 +7,10 @@ interface VotingScreenProps {
   players: Player[]
   currentVoterIndex: number
   onVote: (votedForId: string) => void
+  onPrevious: () => void
 }
 
-export function VotingScreen({ players, currentVoterIndex, onVote }: VotingScreenProps) {
+export function VotingScreen({ players, currentVoterIndex, onVote, onPrevious }: VotingScreenProps) {
   const [revealed, setRevealed] = useState(false)
   const voter = players[currentVoterIndex]
 
@@ -70,6 +71,15 @@ export function VotingScreen({ players, currentVoterIndex, onVote }: VotingScree
           </motion.div>
         )}
       </AnimatePresence>
+
+      {!revealed && currentVoterIndex > 0 && (
+        <button
+          onClick={onPrevious}
+          className="text-sm text-slate-400 underline-offset-2 hover:text-slate-600 hover:underline"
+        >
+          ← Vorige stem (bij vergissing)
+        </button>
+      )}
     </div>
   )
 }

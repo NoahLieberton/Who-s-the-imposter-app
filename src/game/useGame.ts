@@ -50,9 +50,11 @@ type Action =
   | { type: 'SET_PLAYERS'; players: Player[] }
   | { type: 'START_ROUND' }
   | { type: 'ADVANCE_REVEAL' }
+  | { type: 'PREVIOUS_REVEAL' }
   | { type: 'START_DISCUSSION' }
   | { type: 'START_VOTING' }
   | { type: 'CAST_VOTE'; vote: Vote }
+  | { type: 'PREVIOUS_VOTE' }
   | { type: 'RESTART_SAME_PLAYERS' }
   | { type: 'RESET_ALL' }
 
@@ -94,6 +96,8 @@ function reducer(state: GameState, action: Action): GameState {
       }
       return { ...state, currentRevealIndex: nextIndex }
     }
+    case 'PREVIOUS_REVEAL':
+      return { ...state, currentRevealIndex: Math.max(0, state.currentRevealIndex - 1) }
     case 'START_DISCUSSION':
       return { ...state, screen: 'discussion' }
     case 'START_VOTING':
@@ -106,6 +110,14 @@ function reducer(state: GameState, action: Action): GameState {
         return { ...state, votes, screen: 'results', currentVoterIndex: nextVoterIndex, score }
       }
       return { ...state, votes, currentVoterIndex: nextVoterIndex }
+    }
+    case 'PREVIOUS_VOTE': {
+      if (state.currentVoterIndex === 0) return state
+      return {
+        ...state,
+        votes: state.votes.slice(0, -1),
+        currentVoterIndex: state.currentVoterIndex - 1,
+      }
     }
     case 'RESTART_SAME_PLAYERS':
       return {

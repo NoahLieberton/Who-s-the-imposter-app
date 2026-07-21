@@ -71,13 +71,27 @@ export function computeResult(
 }
 
 /**
- * Win rule: crew wins the round (and scores) only if the single most-voted
- * player is an imposter. A tie or a wrong guess both count as the
- * imposter(s) escaping, so they score instead.
+ * Win rule (per player, not per round): a crew member only scores if their
+ * own vote landed on an actual imposter — being in a group that happened to
+ * vote out the imposter isn't enough if you personally voted for someone
+ * else. An imposter scores if they personally weren't the one voted out
+ * (a tie means nobody was voted out, so every imposter escapes).
  */
-export function roundPointsFor(isImposter: boolean, correct: boolean): number {
-  if (correct) return isImposter ? 0 : CREW_WIN_POINTS
-  return isImposter ? IMPOSTER_WIN_POINTS : 0
+export function roundPointsFor(
+  player: Player,
+  round: RoundData,
+  mostVotedIds: string[],
+  tie: boolean,
+  votes: Vote[],
+): number {
+  const isImposter = round.imposterIds.includes(player.id)
+  if (isImposter) {
+    const wasCaught = !tie && mostVotedIds.includes(player.id)
+    return wasCaught ? 0 : IMPOSTER_WIN_POINTS
+  }
+  const myVote = votes.find((v) => v.voterId === player.id)
+  const votedCorrectly = !!myVote && round.imposterIds.includes(myVote.votedForId)
+  return votedCorrectly ? CREW_WIN_POINTS : 0
 }
 
 export function applyRoundScore(
@@ -86,11 +100,12 @@ export function applyRoundScore(
   round: RoundData,
   votes: Vote[],
 ): Record<string, number> {
-  const { correct } = computeResult(round, getMostVotedPlayerIds(tallyVotes(votes)))
+  const tally = tallyVotes(votes)
+  const mostVotedIds = getMostVotedPlayerIds(tally)
+  const tie = mostVotedIds.length !== 1
   const next = { ...score }
   for (const p of players) {
-    const points = roundPointsFor(round.imposterIds.includes(p.id), correct)
-    next[p.id] = (next[p.id] ?? 0) + points
+    next[p.id] = (next[p.id] ?? 0) + roundPointsFor(p, round, mostVotedIds, tie, votes)
   }
   return next
 }

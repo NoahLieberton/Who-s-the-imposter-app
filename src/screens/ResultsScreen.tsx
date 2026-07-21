@@ -1,4 +1,5 @@
-import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { CATEGORY_LABELS } from '../data/wordCategories'
 import {
   CREW_WIN_POINTS,
@@ -39,6 +40,7 @@ export function ResultsScreen({
   const rankedPlayers = [...players].sort(
     (a, b) => (score[b.id] ?? 0) - (score[a.id] ?? 0),
   )
+  const [confirmingNewGame, setConfirmingNewGame] = useState(false)
 
   return (
     <div className="flex flex-col gap-6">
@@ -70,10 +72,10 @@ export function ResultsScreen({
         </h2>
         <p className="mt-2 text-sm text-white/90">
           {tie
-            ? `Geen duidelijke meerderheid, dus de imposter(s) ontsnappen (+${IMPOSTER_WIN_POINTS} punten).`
+            ? `Geen duidelijke meerderheid. Crew-leden die zelf op een imposter stemden krijgen alsnog +${CREW_WIN_POINTS} punt, de imposter(s) ontsnappen met +${IMPOSTER_WIN_POINTS}.`
             : correct
-              ? `De meest gestemde speler was echt de imposter. Elke crew-speler krijgt +${CREW_WIN_POINTS} punt.`
-              : `De meest gestemde speler was onschuldig. De imposter(s) ontsnappen (+${IMPOSTER_WIN_POINTS} punten).`}
+              ? `De meest gestemde speler was echt de imposter. Alleen wie daar zelf op stemde krijgt +${CREW_WIN_POINTS} punt.`
+              : `De meest gestemde speler was onschuldig. Crew-leden die wel goed gokten krijgen nog steeds +${CREW_WIN_POINTS}, de niet-gepakte imposter(s) krijgen +${IMPOSTER_WIN_POINTS}.`}
         </p>
       </motion.div>
 
@@ -117,7 +119,7 @@ export function ResultsScreen({
           content: (
             <ul className="mt-2 flex flex-col gap-1">
               {rankedPlayers.map((p, i) => {
-                const points = roundPointsFor(round.imposterIds.includes(p.id), correct)
+                const points = roundPointsFor(p, round, mostVotedIds, tie, votes)
                 return (
                   <li key={p.id} className="flex items-center justify-between text-slate-700">
                     <span>
@@ -151,9 +153,42 @@ export function ResultsScreen({
 
       <div className="flex flex-col gap-3">
         <Button onClick={onPlayAgain}>Nieuwe ronde (zelfde spelers)</Button>
-        <Button variant="secondary" onClick={onNewGame}>
-          Nieuw spel
-        </Button>
+        <AnimatePresence mode="wait" initial={false}>
+          {!confirmingNewGame ? (
+            <motion.div
+              key="ask"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+            >
+              <Button variant="secondary" onClick={() => setConfirmingNewGame(true)}>
+                Nieuw spel
+              </Button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="confirm"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col gap-2 rounded-2xl border-2 border-rose-100 bg-rose-50 p-4"
+            >
+              <p className="text-center text-sm text-rose-700">
+                Weet je het zeker? Je verliest de huidige score.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="secondary" className="flex-1" onClick={() => setConfirmingNewGame(false)}>
+                  Annuleren
+                </Button>
+                <Button variant="danger" className="flex-1" onClick={onNewGame}>
+                  Ja, nieuw spel
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )
