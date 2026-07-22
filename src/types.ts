@@ -6,6 +6,8 @@ export type ConcreteCategory =
   | 'sport'
   | 'films-series'
   | 'voorwerpen'
+  | 'kleding'
+  | 'vervoer'
 
 export interface Player {
   id: string
