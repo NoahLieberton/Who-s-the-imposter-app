@@ -78,6 +78,8 @@ function App() {
               <VotingScreen
                 players={state.players}
                 currentVoterIndex={state.currentVoterIndex}
+                numImposters={state.config.numImposters}
+                votes={state.votes}
                 onVote={(votedForId) =>
                   dispatch({
                     type: 'CAST_VOTE',

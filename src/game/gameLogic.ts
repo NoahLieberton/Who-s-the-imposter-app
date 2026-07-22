@@ -70,28 +70,57 @@ export function tallyVotes(votes: Vote[]): Record<string, number> {
   return tally
 }
 
-export function getMostVotedPlayerIds(tally: Record<string, number>): string[] {
+/**
+ * Returns the top `count` most-voted players. Ties at the cutoff are all
+ * included rather than arbitrarily broken, so the result can be larger than
+ * `count` when the group didn't clearly converge on that many suspects —
+ * callers treat that as ambiguous (see the `tie` checks below).
+ */
+export function getMostVotedPlayerIds(tally: Record<string, number>, count = 1): string[] {
   const entries = Object.entries(tally)
   if (entries.length === 0) return []
-  const max = Math.max(...entries.map(([, count]) => count))
-  return entries.filter(([, count]) => count === max).map(([id]) => id)
+  const sorted = [...entries].sort((a, b) => b[1] - a[1])
+  if (sorted.length <= count) return sorted.map(([id]) => id)
+  const cutoff = sorted[count - 1][1]
+  return sorted.filter(([, c]) => c >= cutoff).map(([id]) => id)
 }
 
-export function computeResult(
-  round: RoundData,
-  mostVotedIds: string[],
-): { correct: boolean; tie: boolean } {
-  const tie = mostVotedIds.length !== 1
-  const correct = !tie && round.imposterIds.includes(mostVotedIds[0])
-  return { correct, tie }
+export interface RoundResult {
+  tie: boolean
+  totalImposters: number
+  caughtCount: number
+  allCaught: boolean
+  noneCaught: boolean
 }
 
 /**
- * Win rule (per player, not per round): a crew member only scores if their
- * own vote landed on an actual imposter — being in a group that happened to
- * vote out the imposter isn't enough if you personally voted for someone
- * else. An imposter scores if they personally weren't the one voted out
- * (a tie means nobody was voted out, so every imposter escapes).
+ * Reports how many of the imposters were actually caught, not just a single
+ * correct/incorrect flag — with multiple imposters the group can catch some
+ * but not all, and that partial outcome deserves its own message rather
+ * than being lumped in with "nobody was caught".
+ */
+export function computeResult(round: RoundData, mostVotedIds: string[]): RoundResult {
+  const totalImposters = round.imposterIds.length
+  const tie = mostVotedIds.length !== totalImposters
+  const caughtCount = tie
+    ? 0
+    : round.imposterIds.filter((id) => mostVotedIds.includes(id)).length
+  return {
+    tie,
+    totalImposters,
+    caughtCount,
+    allCaught: !tie && caughtCount === totalImposters,
+    noneCaught: tie || caughtCount === 0,
+  }
+}
+
+/**
+ * Win rule (per player, not per round): a crew member scores one point per
+ * vote of theirs that landed on an actual imposter — with multiple
+ * imposters they get one vote per imposter, so this scales naturally. An
+ * imposter scores if they personally weren't among the most-voted suspects
+ * (a tie means the group didn't clearly land on the right number of
+ * suspects, so every imposter escapes).
  */
 export function roundPointsFor(
   player: Player,
@@ -105,9 +134,10 @@ export function roundPointsFor(
     const wasCaught = !tie && mostVotedIds.includes(player.id)
     return wasCaught ? 0 : IMPOSTER_WIN_POINTS
   }
-  const myVote = votes.find((v) => v.voterId === player.id)
-  const votedCorrectly = !!myVote && round.imposterIds.includes(myVote.votedForId)
-  return votedCorrectly ? CREW_WIN_POINTS : 0
+  const correctVotes = votes.filter(
+    (v) => v.voterId === player.id && round.imposterIds.includes(v.votedForId),
+  ).length
+  return correctVotes * CREW_WIN_POINTS
 }
 
 export function applyRoundScore(
@@ -117,8 +147,8 @@ export function applyRoundScore(
   votes: Vote[],
 ): Record<string, number> {
   const tally = tallyVotes(votes)
-  const mostVotedIds = getMostVotedPlayerIds(tally)
-  const tie = mostVotedIds.length !== 1
+  const mostVotedIds = getMostVotedPlayerIds(tally, round.imposterIds.length)
+  const tie = mostVotedIds.length !== round.imposterIds.length
   const next = { ...score }
   for (const p of players) {
     next[p.id] = (next[p.id] ?? 0) + roundPointsFor(p, round, mostVotedIds, tie, votes)

@@ -107,6 +107,11 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, screen: 'voting', currentVoterIndex: 0, votes: [] }
     case 'CAST_VOTE': {
       const votes = [...state.votes, action.vote]
+      const voter = state.players[state.currentVoterIndex]
+      const votesCastByVoter = votes.filter((v) => v.voterId === voter.id).length
+      if (votesCastByVoter < state.config.numImposters) {
+        return { ...state, votes }
+      }
       const nextVoterIndex = state.currentVoterIndex + 1
       if (nextVoterIndex >= state.players.length) {
         const score = applyRoundScore(state.score, state.players, state.round!, votes)
@@ -115,6 +120,12 @@ function reducer(state: GameState, action: Action): GameState {
       return { ...state, votes, currentVoterIndex: nextVoterIndex }
     }
     case 'PREVIOUS_VOTE': {
+      if (state.votes.length === 0) return state
+      const voter = state.players[state.currentVoterIndex]
+      const votesCastByVoter = voter ? state.votes.filter((v) => v.voterId === voter.id).length : 0
+      if (votesCastByVoter > 0) {
+        return { ...state, votes: state.votes.slice(0, -1) }
+      }
       if (state.currentVoterIndex === 0) return state
       return {
         ...state,

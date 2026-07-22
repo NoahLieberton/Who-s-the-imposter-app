@@ -36,15 +36,49 @@ export function ResultsScreen({
   onNewGame,
 }: ResultsScreenProps) {
   const tally = tallyVotes(votes)
-  const mostVotedIds = getMostVotedPlayerIds(tally)
-  const { correct, tie } = computeResult(round, mostVotedIds)
+  const mostVotedIds = getMostVotedPlayerIds(tally, round.imposterIds.length)
+  const { tie, totalImposters, caughtCount, allCaught, noneCaught } = computeResult(
+    round,
+    mostVotedIds,
+  )
+  const single = totalImposters === 1
+  const partial = !tie && caughtCount > 0 && caughtCount < totalImposters
   const rankedPlayers = [...players].sort(
     (a, b) => (score[b.id] ?? 0) - (score[a.id] ?? 0),
   )
   const [confirmingNewGame, setConfirmingNewGame] = useState(false)
 
+  const bannerClass = tie
+    ? 'bg-slate-500'
+    : allCaught
+      ? 'bg-emerald-600'
+      : partial
+        ? 'bg-amber-500'
+        : 'bg-rose-600'
+  const emoji = tie ? '🤔' : allCaught ? '🎉' : partial ? '😬' : '😱'
+  const heading = tie
+    ? 'Onbeslist!'
+    : single
+      ? allCaught
+        ? 'De imposter is gepakt!'
+        : 'De imposter is ontsnapt!'
+      : allCaught
+        ? 'Alle imposters zijn gepakt!'
+        : noneCaught
+          ? 'Alle imposters zijn ontsnapt!'
+          : `${caughtCount} van de ${totalImposters} imposters gepakt!`
+  const description = tie
+    ? `Geen duidelijke meerderheid. Crew-leden krijgen nog steeds +${CREW_WIN_POINTS} punt per juiste stem, de imposter(s) ontsnappen met +${IMPOSTER_WIN_POINTS}.`
+    : `Wie op een echte imposter stemde krijgt +${CREW_WIN_POINTS} punt per juiste stem.${
+        noneCaught
+          ? ` De imposter(s) ontsnappen met +${IMPOSTER_WIN_POINTS}.`
+          : allCaught
+            ? ''
+            : ` Elke niet-gepakte imposter krijgt nog +${IMPOSTER_WIN_POINTS}.`
+      }`
+
   useEffect(() => {
-    if (correct) playWin()
+    if (caughtCount > 0) playWin()
     else playLose()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
@@ -54,36 +88,26 @@ export function ResultsScreen({
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={
-          correct
+          allCaught
             ? { opacity: 1, scale: 1 }
-            : tie
+            : tie || partial
               ? { opacity: 1, scale: 1 }
               : { opacity: 1, scale: 1, x: [0, -10, 10, -8, 8, -4, 4, 0] }
         }
-        transition={{ duration: correct || tie ? 0.4 : 0.6, ease: 'easeOut' }}
-        className={`relative overflow-hidden rounded-3xl px-6 py-8 text-center text-white shadow-lg ${
-          tie ? 'bg-slate-500' : correct ? 'bg-emerald-600' : 'bg-rose-600'
-        }`}
+        transition={{ duration: allCaught || tie || partial ? 0.4 : 0.6, ease: 'easeOut' }}
+        className={`relative overflow-hidden rounded-3xl px-6 py-8 text-center text-white shadow-lg ${bannerClass}`}
       >
-        {correct && <Confetti />}
+        {allCaught && <Confetti />}
         <motion.p
           className="text-5xl"
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           transition={{ type: 'spring', stiffness: 300, damping: 12, delay: 0.15 }}
         >
-          {tie ? '🤔' : correct ? '🎉' : '😱'}
+          {emoji}
         </motion.p>
-        <h2 className="mt-3 text-2xl font-extrabold">
-          {tie ? 'Onbeslist!' : correct ? 'De imposter is gepakt!' : 'De imposter is ontsnapt!'}
-        </h2>
-        <p className="mt-2 text-sm text-white/90">
-          {tie
-            ? `Geen duidelijke meerderheid. Crew-leden die zelf op een imposter stemden krijgen alsnog +${CREW_WIN_POINTS} punt, de imposter(s) ontsnappen met +${IMPOSTER_WIN_POINTS}.`
-            : correct
-              ? `De meest gestemde speler was echt de imposter. Alleen wie daar zelf op stemde krijgt +${CREW_WIN_POINTS} punt.`
-              : `De meest gestemde speler was onschuldig. Crew-leden die wel goed gokten krijgen nog steeds +${CREW_WIN_POINTS}, de niet-gepakte imposter(s) krijgen +${IMPOSTER_WIN_POINTS}.`}
-        </p>
+        <h2 className="mt-3 text-2xl font-extrabold">{heading}</h2>
+        <p className="mt-2 text-sm text-white/90">{description}</p>
       </motion.div>
 
       {[
