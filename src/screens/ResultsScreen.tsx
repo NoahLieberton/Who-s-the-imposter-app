@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CATEGORY_LABELS } from '../data/wordCategories'
 import {
@@ -12,6 +12,7 @@ import {
 import type { Player, RoundData, Vote } from '../types'
 import { Button } from '../components/Button'
 import { Confetti } from '../components/Confetti'
+import { playLose, playWin } from '../lib/sound'
 
 interface ResultsScreenProps {
   players: Player[]
@@ -41,6 +42,12 @@ export function ResultsScreen({
     (a, b) => (score[b.id] ?? 0) - (score[a.id] ?? 0),
   )
   const [confirmingNewGame, setConfirmingNewGame] = useState(false)
+
+  useEffect(() => {
+    if (correct) playWin()
+    else playLose()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   return (
     <div className="flex flex-col gap-6">

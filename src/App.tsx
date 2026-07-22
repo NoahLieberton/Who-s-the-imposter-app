@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { useGame } from './game/useGame'
 import { ProgressSteps } from './components/ProgressSteps'
+import { SoundToggle } from './components/SoundToggle'
 import { SetupScreen } from './screens/SetupScreen'
 import { PlayerNamesScreen } from './screens/PlayerNamesScreen'
 import { RoleRevealScreen } from './screens/RoleRevealScreen'
@@ -24,7 +25,13 @@ function App() {
     <div
       className={`min-h-dvh bg-gradient-to-b transition-colors duration-700 ${BACKGROUND_BY_SCREEN[state.screen]}`}
     >
+      <SoundToggle />
       <main className="mx-auto max-w-md px-4 py-8 pb-[env(safe-area-inset-bottom)]">
+        {state.screen !== 'setup' && (
+          <p className="mb-1 text-center text-xs font-semibold tracking-wide text-violet-400">
+            🕵️ WHO'S THE IMPOSTER
+          </p>
+        )}
         {state.screen !== 'setup' && <ProgressSteps current={state.screen} />}
 
         <AnimatePresence mode="wait">

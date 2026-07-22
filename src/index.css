@@ -1,4 +1,7 @@
 @import "tailwindcss";
+@import "@fontsource/fredoka/500.css";
+@import "@fontsource/fredoka/600.css";
+@import "@fontsource/fredoka/700.css";
 
 html,
 body,
@@ -9,4 +12,9 @@ body,
 body {
   margin: 0;
   font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+h1,
+h2 {
+  font-family: "Fredoka", system-ui, sans-serif;
 }

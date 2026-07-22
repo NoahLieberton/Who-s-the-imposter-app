@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Player } from '../types'
 import { PassDeviceCard } from '../components/PassDeviceCard'
+import { playSelect } from '../lib/sound'
 
 interface VotingScreenProps {
   players: Player[]
@@ -56,7 +57,10 @@ export function VotingScreen({ players, currentVoterIndex, onVote, onPrevious }:
               {players.map((p, i) => (
                 <motion.button
                   key={p.id}
-                  onClick={() => onVote(p.id)}
+                  onClick={() => {
+                    playSelect()
+                    onVote(p.id)
+                  }}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: i * 0.04, duration: 0.25 }}

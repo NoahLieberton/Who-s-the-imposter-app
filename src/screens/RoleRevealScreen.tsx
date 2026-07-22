@@ -4,6 +4,7 @@ import { CATEGORY_LABELS } from '../data/wordCategories'
 import type { Player, RoundData } from '../types'
 import { Button } from '../components/Button'
 import { PassDeviceCard } from '../components/PassDeviceCard'
+import { playFlip } from '../lib/sound'
 
 interface RoleRevealScreenProps {
   players: Player[]
@@ -44,12 +45,14 @@ export function RoleRevealScreen({
   const isImposter = round.imposterIds.includes(player.id)
 
   function handleReveal() {
+    playFlip()
     setAnimating(true)
     setRevealed(true)
     hasOpenedRef.current = true
   }
 
   function handleHide() {
+    playFlip()
     setAnimating(true)
     setRevealed(false)
   }
