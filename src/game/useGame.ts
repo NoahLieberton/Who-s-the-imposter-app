@@ -32,6 +32,7 @@ function initialState(): GameState {
     votes: [],
     startingPlayerId: null,
     score: {},
+    usedWords: [],
   }
 }
 
@@ -73,16 +74,19 @@ function reducer(state: GameState, action: Action): GameState {
       const numImposters = Math.min(state.config.numImposters, players.length - 1)
       return { ...state, players, config: { ...state.config, numImposters } }
     }
-    case 'START_ROUND':
+    case 'START_ROUND': {
+      const round = startRound(state.players, state.config, state.usedWords)
       return {
         ...state,
         screen: 'reveal',
-        round: startRound(state.players, state.config),
+        round,
+        usedWords: [...state.usedWords, round.secretWord],
         currentRevealIndex: 0,
         currentVoterIndex: 0,
         votes: [],
         startingPlayerId: null,
       }
+    }
     case 'ADVANCE_REVEAL': {
       const nextIndex = state.currentRevealIndex + 1
       if (nextIndex >= state.players.length) {
@@ -132,16 +136,19 @@ function reducer(state: GameState, action: Action): GameState {
         votes: [],
         startingPlayerId: null,
       }
-    case 'RESTART_SAME_PLAYERS':
+    case 'RESTART_SAME_PLAYERS': {
+      const round = startRound(state.players, state.config, state.usedWords)
       return {
         ...state,
         screen: 'reveal',
-        round: startRound(state.players, state.config),
+        round,
+        usedWords: [...state.usedWords, round.secretWord],
         currentRevealIndex: 0,
         currentVoterIndex: 0,
         votes: [],
         startingPlayerId: null,
       }
+    }
     case 'RESET_ALL':
       return initialState()
     default:

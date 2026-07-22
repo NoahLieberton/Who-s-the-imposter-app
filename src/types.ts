@@ -12,9 +12,10 @@ export interface Player {
   name: string
 }
 
-export interface WordPair {
+export interface WordEntry {
   word: string
-  hint: string
+  /** Broad, plausible hints an imposter could get instead of the real word. */
+  hints: string[]
 }
 
 export interface GameConfig {
@@ -51,4 +52,6 @@ export interface GameState {
   startingPlayerId: string | null
   /** Cumulative points per player id, across rounds with the same players. */
   score: Record<string, number>
+  /** Secret words already used this game, to avoid repeats until a category is exhausted. */
+  usedWords: string[]
 }

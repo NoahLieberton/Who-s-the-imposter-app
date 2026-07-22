@@ -1,5 +1,5 @@
 import { WORD_CATEGORIES } from '../data/wordCategories'
-import type { ConcreteCategory, GameConfig, Player, RoundData, Vote, WordPair } from '../types'
+import type { ConcreteCategory, GameConfig, Player, RoundData, Vote, WordEntry } from '../types'
 
 export const CREW_WIN_POINTS = 1
 export const IMPOSTER_WIN_POINTS = 2
@@ -20,10 +20,20 @@ export function pickCategory(selectedCategories: ConcreteCategory[]): ConcreteCa
   return pool[Math.floor(Math.random() * pool.length)]
 }
 
-export function pickWordPair(category: ConcreteCategory): WordPair {
-  const pairs = WORD_CATEGORIES[category]
-  const pair = pairs[Math.floor(Math.random() * pairs.length)]
-  return Math.random() < 0.5 ? pair : { word: pair.hint, hint: pair.word }
+/**
+ * Picks a word that hasn't been used yet this game where possible. Once a
+ * category's whole word list has been seen, it naturally starts allowing
+ * repeats again instead of the game grinding to a halt.
+ */
+export function pickWordEntry(category: ConcreteCategory, usedWords: string[]): WordEntry {
+  const all = WORD_CATEGORIES[category]
+  const unused = all.filter((entry) => !usedWords.includes(entry.word))
+  const pool = unused.length > 0 ? unused : all
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
+export function pickHint(entry: WordEntry): string {
+  return entry.hints[Math.floor(Math.random() * entry.hints.length)]
 }
 
 export function assignImposters(players: Player[], numImposters: number): string[] {
@@ -35,13 +45,13 @@ export function pickStartingPlayer(players: Player[]): string {
   return players[Math.floor(Math.random() * players.length)].id
 }
 
-export function startRound(players: Player[], config: GameConfig): RoundData {
+export function startRound(players: Player[], config: GameConfig, usedWords: string[]): RoundData {
   const categoryUsed = pickCategory(config.categories)
-  const { word, hint } = pickWordPair(categoryUsed)
+  const entry = pickWordEntry(categoryUsed, usedWords)
   return {
-    secretWord: word,
+    secretWord: entry.word,
     categoryUsed,
-    hintWord: hint,
+    hintWord: pickHint(entry),
     imposterIds: assignImposters(players, config.numImposters),
   }
 }
