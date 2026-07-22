@@ -56,9 +56,15 @@ export function startRound(players: Player[], config: GameConfig, usedWords: str
   }
 }
 
+/**
+ * A self-vote carries no information about who the group suspects, so it's
+ * excluded here — an imposter voting for themselves shouldn't help "catch"
+ * them, and shouldn't count toward anyone being the most-voted player.
+ */
 export function tallyVotes(votes: Vote[]): Record<string, number> {
   const tally: Record<string, number> = {}
   for (const vote of votes) {
+    if (vote.voterId === vote.votedForId) continue
     tally[vote.votedForId] = (tally[vote.votedForId] ?? 0) + 1
   }
   return tally
