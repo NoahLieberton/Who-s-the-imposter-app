@@ -64,7 +64,6 @@ function App() {
 
             {state.screen === 'discussion' && state.round && (
               <DiscussionScreen
-                round={state.round}
                 config={state.config}
                 players={state.players}
                 startingPlayerId={state.startingPlayerId}

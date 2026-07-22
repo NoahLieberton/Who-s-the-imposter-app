@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { CATEGORY_LABELS } from '../data/wordCategories'
-import type { GameConfig, Player, RoundData } from '../types'
+import type { GameConfig, Player } from '../types'
 import { Button } from '../components/Button'
 
 interface DiscussionScreenProps {
-  round: RoundData
   config: GameConfig
   players: Player[]
   startingPlayerId: string | null
@@ -21,7 +19,6 @@ function formatTime(seconds: number): string {
 }
 
 export function DiscussionScreen({
-  round,
   config,
   players,
   startingPlayerId,
@@ -52,10 +49,7 @@ export function DiscussionScreen({
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center gap-8 text-center">
       <div>
-        <p className="text-sm uppercase tracking-wide text-violet-500">Categorie</p>
-        <h2 className="mt-1 text-3xl font-bold text-slate-900">
-          {CATEGORY_LABELS[round.categoryUsed]}
-        </h2>
+        <h2 className="text-2xl font-bold text-slate-900">Tijd om te discussiëren</h2>
         <p className="mt-2 text-slate-500">Bespreek het woord zonder het te verklappen</p>
       </div>
 

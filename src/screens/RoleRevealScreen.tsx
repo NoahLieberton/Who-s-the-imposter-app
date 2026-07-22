@@ -102,9 +102,6 @@ export function RoleRevealScreen({
                 <p className="text-5xl">🕵️</p>
                 <h2 className="mt-4 text-2xl font-extrabold">Jij bent de IMPOSTER!</h2>
                 <p className="mt-2 text-rose-100">
-                  Categorie: <span className="font-semibold">{CATEGORY_LABELS[round.categoryUsed]}</span>
-                </p>
-                <p className="mt-1 text-rose-100">
                   Hint: <span className="font-semibold">{round.hintWord}</span>
                 </p>
                 <p className="mt-2 text-sm text-rose-100">
