@@ -2,12 +2,15 @@ import { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import type { GameConfig, Player } from '../types'
 import { Button } from '../components/Button'
+import { StopRoundButton } from '../components/StopRoundButton'
 
 interface DiscussionScreenProps {
   config: GameConfig
   players: Player[]
   startingPlayerId: string | null
   onStartVoting: () => void
+  onBackToReveal: () => void
+  onStop: () => void
 }
 
 const URGENT_THRESHOLD = 10
@@ -23,6 +26,8 @@ export function DiscussionScreen({
   players,
   startingPlayerId,
   onStartVoting,
+  onBackToReveal,
+  onStop,
 }: DiscussionScreenProps) {
   const [secondsLeft, setSecondsLeft] = useState(config.discussionTimerSeconds)
   const [running, setRunning] = useState(false)
@@ -110,6 +115,15 @@ export function DiscussionScreen({
       </p>
 
       <Button onClick={onStartVoting}>Start stemronde</Button>
+
+      <button
+        onClick={onBackToReveal}
+        className="text-sm text-slate-400 underline-offset-2 hover:text-slate-600 hover:underline"
+      >
+        ← Terug naar onthullen (rollen opnieuw tonen)
+      </button>
+
+      <StopRoundButton onStop={onStop} />
     </div>
   )
 }

@@ -59,6 +59,7 @@ function App() {
                 currentRevealIndex={state.currentRevealIndex}
                 onAdvance={() => dispatch({ type: 'ADVANCE_REVEAL' })}
                 onPrevious={() => dispatch({ type: 'PREVIOUS_REVEAL' })}
+                onStop={() => dispatch({ type: 'STOP_ROUND' })}
               />
             )}
 
@@ -68,6 +69,8 @@ function App() {
                 players={state.players}
                 startingPlayerId={state.startingPlayerId}
                 onStartVoting={() => dispatch({ type: 'START_VOTING' })}
+                onBackToReveal={() => dispatch({ type: 'BACK_TO_REVEAL' })}
+                onStop={() => dispatch({ type: 'STOP_ROUND' })}
               />
             )}
 
@@ -82,6 +85,8 @@ function App() {
                   })
                 }
                 onPrevious={() => dispatch({ type: 'PREVIOUS_VOTE' })}
+                onBackToDiscussion={() => dispatch({ type: 'BACK_TO_DISCUSSION' })}
+                onStop={() => dispatch({ type: 'STOP_ROUND' })}
               />
             )}
 

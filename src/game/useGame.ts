@@ -47,6 +47,9 @@ type Action =
   | { type: 'START_VOTING' }
   | { type: 'CAST_VOTE'; vote: Vote }
   | { type: 'PREVIOUS_VOTE' }
+  | { type: 'BACK_TO_REVEAL' }
+  | { type: 'BACK_TO_DISCUSSION' }
+  | { type: 'STOP_ROUND' }
   | { type: 'RESTART_SAME_PLAYERS' }
   | { type: 'RESET_ALL' }
 
@@ -115,6 +118,20 @@ function reducer(state: GameState, action: Action): GameState {
         currentVoterIndex: state.currentVoterIndex - 1,
       }
     }
+    case 'BACK_TO_REVEAL':
+      return { ...state, screen: 'reveal', currentRevealIndex: 0, startingPlayerId: null }
+    case 'BACK_TO_DISCUSSION':
+      return { ...state, screen: 'discussion' }
+    case 'STOP_ROUND':
+      return {
+        ...state,
+        screen: 'setup',
+        round: null,
+        currentRevealIndex: 0,
+        currentVoterIndex: 0,
+        votes: [],
+        startingPlayerId: null,
+      }
     case 'RESTART_SAME_PLAYERS':
       return {
         ...state,

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import type { Player } from '../types'
 import { PassDeviceCard } from '../components/PassDeviceCard'
+import { StopRoundButton } from '../components/StopRoundButton'
 import { playSelect } from '../lib/sound'
 
 interface VotingScreenProps {
@@ -9,9 +10,18 @@ interface VotingScreenProps {
   currentVoterIndex: number
   onVote: (votedForId: string) => void
   onPrevious: () => void
+  onBackToDiscussion: () => void
+  onStop: () => void
 }
 
-export function VotingScreen({ players, currentVoterIndex, onVote, onPrevious }: VotingScreenProps) {
+export function VotingScreen({
+  players,
+  currentVoterIndex,
+  onVote,
+  onPrevious,
+  onBackToDiscussion,
+  onStop,
+}: VotingScreenProps) {
   const [revealed, setRevealed] = useState(false)
   const voter = players[currentVoterIndex]
 
@@ -84,6 +94,19 @@ export function VotingScreen({ players, currentVoterIndex, onVote, onPrevious }:
           ← Vorige stem (bij vergissing)
         </button>
       )}
+
+      {!revealed && currentVoterIndex === 0 && (
+        <button
+          onClick={onBackToDiscussion}
+          className="text-sm text-slate-400 underline-offset-2 hover:text-slate-600 hover:underline"
+        >
+          ← Terug naar discussie
+        </button>
+      )}
+
+      <div className="flex justify-center">
+        <StopRoundButton onStop={onStop} />
+      </div>
     </div>
   )
 }
