@@ -1,16 +1,18 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { CATEGORY_LABELS } from '../data/wordCategories'
-import type { ConcreteCategory, GameConfig } from '../types'
+import { MAX_PLAYERS, MIN_PLAYERS } from '../game/useGame'
+import type { ConcreteCategory, GameConfig, Player } from '../types'
 import { Button } from '../components/Button'
 
 interface SetupScreenProps {
   config: GameConfig
   onChange: (config: Partial<GameConfig>) => void
+  players: Player[]
+  onPlayersChange: (players: Player[]) => void
+  onAddPlayer: () => void
+  onRemovePlayer: (id: string) => void
   onNext: () => void
 }
-
-const MIN_PLAYERS = 3
-const MAX_PLAYERS = 10
 
 const cardVariants = {
   hidden: { opacity: 0, y: 16 },
@@ -21,8 +23,16 @@ const cardVariants = {
   }),
 }
 
-export function SetupScreen({ config, onChange, onNext }: SetupScreenProps) {
-  const maxImposters = Math.max(1, config.numPlayers - 1)
+export function SetupScreen({
+  config,
+  onChange,
+  players,
+  onPlayersChange,
+  onAddPlayer,
+  onRemovePlayer,
+  onNext,
+}: SetupScreenProps) {
+  const maxImposters = Math.max(1, players.length - 1)
 
   function toggleCategory(key: ConcreteCategory) {
     const isSelected = config.categories.includes(key)
@@ -31,6 +41,17 @@ export function SetupScreen({ config, onChange, onNext }: SetupScreenProps) {
         ? config.categories.filter((c) => c !== key)
         : [...config.categories, key],
     })
+  }
+
+  function updateName(id: string, name: string) {
+    onPlayersChange(players.map((p) => (p.id === id ? { ...p, name } : p)))
+  }
+
+  function handleStart() {
+    onPlayersChange(
+      players.map((p, i) => ({ ...p, name: p.name.trim() === '' ? `Speler ${i + 1}` : p.name.trim() })),
+    )
+    onNext()
   }
 
   return (
@@ -53,21 +74,48 @@ export function SetupScreen({ config, onChange, onNext }: SetupScreenProps) {
         className="rounded-2xl bg-white p-5 shadow-sm"
       >
         <div className="flex items-center justify-between">
-          <span className="font-semibold text-slate-700">Aantal spelers</span>
-          <span className="text-2xl font-bold text-violet-700">{config.numPlayers}</span>
+          <span className="font-semibold text-slate-700">Spelers</span>
+          <span className="text-2xl font-bold text-violet-700">{players.length}</span>
         </div>
-        <input
-          type="range"
-          min={MIN_PLAYERS}
-          max={MAX_PLAYERS}
-          value={config.numPlayers}
-          onChange={(e) => {
-            const numPlayers = Number(e.target.value)
-            const numImposters = Math.min(config.numImposters, numPlayers - 1)
-            onChange({ numPlayers, numImposters })
-          }}
-          className="mt-3 w-full accent-violet-600"
-        />
+
+        <div className="mt-3 flex flex-col gap-2">
+          {players.map((p, i) => (
+            <motion.div
+              key={p.id}
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.2 }}
+              className="flex items-center gap-2"
+            >
+              <input
+                value={p.name}
+                placeholder={`Speler ${i + 1}`}
+                onChange={(e) => updateName(p.id, e.target.value)}
+                className="flex-1 rounded-xl border-2 border-violet-100 bg-white px-3 py-2 text-base outline-none focus:border-violet-400"
+              />
+              {players.length > MIN_PLAYERS && (
+                <motion.button
+                  whileTap={{ scale: 0.9 }}
+                  onClick={() => onRemovePlayer(p.id)}
+                  aria-label={`Verwijder ${p.name || `Speler ${i + 1}`}`}
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100"
+                >
+                  ✕
+                </motion.button>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {players.length < MAX_PLAYERS && (
+          <motion.button
+            whileTap={{ scale: 0.97 }}
+            onClick={onAddPlayer}
+            className="mt-3 w-full rounded-xl border-2 border-dashed border-violet-200 py-2 text-sm font-semibold text-violet-600 hover:bg-violet-50"
+          >
+            + Speler toevoegen
+          </motion.button>
+        )}
       </motion.div>
 
       <motion.div
@@ -176,7 +224,7 @@ export function SetupScreen({ config, onChange, onNext }: SetupScreenProps) {
         </AnimatePresence>
       </motion.div>
 
-      <Button onClick={onNext}>Volgende</Button>
+      <Button onClick={handleStart}>Start ronde</Button>
     </div>
   )
 }

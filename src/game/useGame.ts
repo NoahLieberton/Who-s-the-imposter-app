@@ -2,8 +2,11 @@ import { useReducer } from 'react'
 import type { GameConfig, GameState, Player, Vote } from '../types'
 import { applyRoundScore, pickStartingPlayer, startRound } from './gameLogic'
 
+export const MIN_PLAYERS = 3
+export const MAX_PLAYERS = 10
+const DEFAULT_NUM_PLAYERS = 4
+
 const DEFAULT_CONFIG: GameConfig = {
-  numPlayers: 4,
   numImposters: 1,
   categories: [],
   discussionTimerEnabled: true,
@@ -17,23 +20,12 @@ function initialPlayers(numPlayers: number): Player[] {
   }))
 }
 
-function resizePlayers(players: Player[], numPlayers: number): Player[] {
-  if (numPlayers === players.length) return players
-  if (numPlayers < players.length) return players.slice(0, numPlayers)
-  return [
-    ...players,
-    ...Array.from({ length: numPlayers - players.length }, (_, i) => ({
-      id: `player-${players.length + i}`,
-      name: '',
-    })),
-  ]
-}
-
 function initialState(): GameState {
   return {
     screen: 'setup',
     config: DEFAULT_CONFIG,
-    players: initialPlayers(DEFAULT_CONFIG.numPlayers),
+    players: initialPlayers(DEFAULT_NUM_PLAYERS),
+    nextPlayerId: DEFAULT_NUM_PLAYERS,
     round: null,
     currentRevealIndex: 0,
     currentVoterIndex: 0,
@@ -45,9 +37,9 @@ function initialState(): GameState {
 
 type Action =
   | { type: 'SET_CONFIG'; config: Partial<GameConfig> }
-  | { type: 'GO_TO_PLAYERS' }
-  | { type: 'GO_TO_SETUP' }
   | { type: 'SET_PLAYERS'; players: Player[] }
+  | { type: 'ADD_PLAYER' }
+  | { type: 'REMOVE_PLAYER'; id: string }
   | { type: 'START_ROUND' }
   | { type: 'ADVANCE_REVEAL' }
   | { type: 'PREVIOUS_REVEAL' }
@@ -60,20 +52,24 @@ type Action =
 
 function reducer(state: GameState, action: Action): GameState {
   switch (action.type) {
-    case 'SET_CONFIG': {
-      const config = { ...state.config, ...action.config }
-      const players =
-        config.numPlayers !== state.config.numPlayers
-          ? resizePlayers(state.players, config.numPlayers)
-          : state.players
-      return { ...state, config, players }
-    }
-    case 'GO_TO_PLAYERS':
-      return { ...state, screen: 'players' }
-    case 'GO_TO_SETUP':
-      return { ...state, screen: 'setup' }
+    case 'SET_CONFIG':
+      return { ...state, config: { ...state.config, ...action.config } }
     case 'SET_PLAYERS':
       return { ...state, players: action.players }
+    case 'ADD_PLAYER': {
+      if (state.players.length >= MAX_PLAYERS) return state
+      return {
+        ...state,
+        players: [...state.players, { id: `player-${state.nextPlayerId}`, name: '' }],
+        nextPlayerId: state.nextPlayerId + 1,
+      }
+    }
+    case 'REMOVE_PLAYER': {
+      if (state.players.length <= MIN_PLAYERS) return state
+      const players = state.players.filter((p) => p.id !== action.id)
+      const numImposters = Math.min(state.config.numImposters, players.length - 1)
+      return { ...state, players, config: { ...state.config, numImposters } }
+    }
     case 'START_ROUND':
       return {
         ...state,

@@ -18,7 +18,6 @@ export interface WordPair {
 }
 
 export interface GameConfig {
-  numPlayers: number
   numImposters: number
   /** Categories eligible for the round. Empty means any category. */
   categories: ConcreteCategory[]
@@ -38,18 +37,13 @@ export interface RoundData {
   imposterIds: string[]
 }
 
-export type Screen =
-  | 'setup'
-  | 'players'
-  | 'reveal'
-  | 'discussion'
-  | 'voting'
-  | 'results'
+export type Screen = 'setup' | 'reveal' | 'discussion' | 'voting' | 'results'
 
 export interface GameState {
   screen: Screen
   config: GameConfig
   players: Player[]
+  nextPlayerId: number
   round: RoundData | null
   currentRevealIndex: number
   currentVoterIndex: number

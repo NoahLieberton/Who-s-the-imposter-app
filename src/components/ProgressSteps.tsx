@@ -3,7 +3,6 @@ import type { Screen } from '../types'
 
 const STEPS: { screen: Screen; label: string }[] = [
   { screen: 'setup', label: 'Setup' },
-  { screen: 'players', label: 'Namen' },
   { screen: 'reveal', label: 'Onthullen' },
   { screen: 'discussion', label: 'Discussie' },
   { screen: 'voting', label: 'Stemmen' },

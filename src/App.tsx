@@ -3,7 +3,6 @@ import { useGame } from './game/useGame'
 import { ProgressSteps } from './components/ProgressSteps'
 import { SoundToggle } from './components/SoundToggle'
 import { SetupScreen } from './screens/SetupScreen'
-import { PlayerNamesScreen } from './screens/PlayerNamesScreen'
 import { RoleRevealScreen } from './screens/RoleRevealScreen'
 import { DiscussionScreen } from './screens/DiscussionScreen'
 import { VotingScreen } from './screens/VotingScreen'
@@ -11,7 +10,6 @@ import { ResultsScreen } from './screens/ResultsScreen'
 
 const BACKGROUND_BY_SCREEN: Record<string, string> = {
   setup: 'from-violet-50 via-white to-white',
-  players: 'from-violet-50 via-white to-white',
   reveal: 'from-violet-100 via-violet-50 to-white',
   discussion: 'from-amber-50 via-white to-white',
   voting: 'from-violet-50 via-white to-white',
@@ -46,15 +44,10 @@ function App() {
               <SetupScreen
                 config={state.config}
                 onChange={(config) => dispatch({ type: 'SET_CONFIG', config })}
-                onNext={() => dispatch({ type: 'GO_TO_PLAYERS' })}
-              />
-            )}
-
-            {state.screen === 'players' && (
-              <PlayerNamesScreen
                 players={state.players}
-                onChange={(players) => dispatch({ type: 'SET_PLAYERS', players })}
-                onBack={() => dispatch({ type: 'GO_TO_SETUP' })}
+                onPlayersChange={(players) => dispatch({ type: 'SET_PLAYERS', players })}
+                onAddPlayer={() => dispatch({ type: 'ADD_PLAYER' })}
+                onRemovePlayer={(id) => dispatch({ type: 'REMOVE_PLAYER', id })}
                 onNext={() => dispatch({ type: 'START_ROUND' })}
               />
             )}
