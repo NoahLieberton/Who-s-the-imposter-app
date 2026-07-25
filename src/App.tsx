@@ -49,6 +49,8 @@ function App() {
                 onAddPlayer={() => dispatch({ type: 'ADD_PLAYER' })}
                 onRemovePlayer={(id) => dispatch({ type: 'REMOVE_PLAYER', id })}
                 onNext={() => dispatch({ type: 'START_ROUND' })}
+                hasProgress={state.usedWords.length > 0}
+                onNewGame={() => dispatch({ type: 'RESET_ALL' })}
               />
             )}
 

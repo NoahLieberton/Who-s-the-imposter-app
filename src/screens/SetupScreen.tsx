@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { CATEGORY_LABELS } from '../data/wordCategories'
 import { MAX_PLAYERS, MIN_PLAYERS } from '../game/useGame'
@@ -12,6 +13,8 @@ interface SetupScreenProps {
   onAddPlayer: () => void
   onRemovePlayer: (id: string) => void
   onNext: () => void
+  hasProgress: boolean
+  onNewGame: () => void
 }
 
 const cardVariants = {
@@ -31,8 +34,11 @@ export function SetupScreen({
   onAddPlayer,
   onRemovePlayer,
   onNext,
+  hasProgress,
+  onNewGame,
 }: SetupScreenProps) {
   const maxImposters = Math.max(1, players.length - 1)
+  const [confirmingNewGame, setConfirmingNewGame] = useState(false)
 
   function toggleCategory(key: ConcreteCategory) {
     const isSelected = config.categories.includes(key)
@@ -225,6 +231,42 @@ export function SetupScreen({
       </motion.div>
 
       <Button onClick={handleStart}>Start ronde</Button>
+
+      {hasProgress && (
+        <AnimatePresence mode="wait" initial={false}>
+          {!confirmingNewGame ? (
+            <motion.div key="ask" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}>
+              <button
+                onClick={() => setConfirmingNewGame(true)}
+                className="w-full text-center text-sm text-slate-400 underline-offset-2 hover:text-slate-600 hover:underline"
+              >
+                Liever een heel nieuw spel starten?
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="confirm"
+              initial={{ opacity: 0, y: -6 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex flex-col gap-2 rounded-2xl border-2 border-rose-100 bg-rose-50 p-4"
+            >
+              <p className="text-center text-sm text-rose-700">
+                Weet je het zeker? Je verliest de huidige score.
+              </p>
+              <div className="flex gap-2">
+                <Button variant="secondary" className="flex-1" onClick={() => setConfirmingNewGame(false)}>
+                  Annuleren
+                </Button>
+                <Button variant="danger" className="flex-1" onClick={onNewGame}>
+                  Ja, nieuw spel
+                </Button>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      )}
     </div>
   )
 }
