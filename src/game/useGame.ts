@@ -1,6 +1,6 @@
 import { useReducer } from 'react'
-import type { GameConfig, GameState, Player, Vote } from '../types'
-import { applyRoundScore, pickStartingPlayer, startRound } from './gameLogic'
+import type { GameConfig, GameState, ManualResult, Player, Vote } from '../types'
+import { applyManualRoundScore, applyRoundScore, pickStartingPlayer, startRound } from './gameLogic'
 
 export const MIN_PLAYERS = 3
 export const MAX_PLAYERS = 10
@@ -11,6 +11,7 @@ const DEFAULT_CONFIG: GameConfig = {
   categories: [],
   discussionTimerEnabled: true,
   discussionTimerSeconds: 90,
+  votingEnabled: true,
 }
 
 function initialPlayers(numPlayers: number): Player[] {
@@ -33,6 +34,7 @@ function initialState(): GameState {
     startingPlayerId: null,
     score: {},
     usedWords: [],
+    manualResult: null,
   }
 }
 
@@ -48,6 +50,8 @@ type Action =
   | { type: 'START_VOTING' }
   | { type: 'CAST_VOTE'; vote: Vote }
   | { type: 'PREVIOUS_VOTE' }
+  | { type: 'START_MANUAL_RESULT' }
+  | { type: 'SUBMIT_MANUAL_RESULT'; result: ManualResult }
   | { type: 'BACK_TO_REVEAL' }
   | { type: 'BACK_TO_DISCUSSION' }
   | { type: 'STOP_ROUND' }
@@ -85,6 +89,7 @@ function reducer(state: GameState, action: Action): GameState {
         currentVoterIndex: 0,
         votes: [],
         startingPlayerId: null,
+        manualResult: null,
       }
     }
     case 'ADVANCE_REVEAL': {
@@ -133,6 +138,18 @@ function reducer(state: GameState, action: Action): GameState {
         currentVoterIndex: state.currentVoterIndex - 1,
       }
     }
+    case 'START_MANUAL_RESULT':
+      return { ...state, screen: 'manual-result' }
+    case 'SUBMIT_MANUAL_RESULT': {
+      const score = applyManualRoundScore(
+        state.score,
+        state.players,
+        state.round!,
+        action.result.correctVoterIds,
+        action.result.caughtImposterIds,
+      )
+      return { ...state, screen: 'results', score, manualResult: action.result }
+    }
     case 'BACK_TO_REVEAL':
       return { ...state, screen: 'reveal', currentRevealIndex: 0, startingPlayerId: null }
     case 'BACK_TO_DISCUSSION':
@@ -146,6 +163,7 @@ function reducer(state: GameState, action: Action): GameState {
         currentVoterIndex: 0,
         votes: [],
         startingPlayerId: null,
+        manualResult: null,
       }
     case 'RESTART_SAME_PLAYERS': {
       const round = startRound(state.players, state.config, state.usedWords)
@@ -158,6 +176,7 @@ function reducer(state: GameState, action: Action): GameState {
         currentVoterIndex: 0,
         votes: [],
         startingPlayerId: null,
+        manualResult: null,
       }
     }
     case 'RESET_ALL':

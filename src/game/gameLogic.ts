@@ -155,3 +155,54 @@ export function applyRoundScore(
   }
   return next
 }
+
+/**
+ * Same shape as computeResult, but built directly from what a moderator
+ * enters after a real-life (e.g. pointing) vote instead of derived from a
+ * tally — there's no ambiguity to resolve since the moderator states the
+ * outcome directly, so this is never a "tie".
+ */
+export function manualRoundResult(round: RoundData, caughtImposterIds: string[]): RoundResult {
+  const totalImposters = round.imposterIds.length
+  const caughtCount = caughtImposterIds.length
+  return {
+    tie: false,
+    totalImposters,
+    caughtCount,
+    allCaught: caughtCount === totalImposters,
+    noneCaught: caughtCount === 0,
+  }
+}
+
+/**
+ * Manual-entry equivalent of roundPointsFor: a real-life vote (e.g. by
+ * pointing) only supports one guess per person, so a crew member scores at
+ * most one point per round here rather than one per imposter.
+ */
+export function manualRoundPointsFor(
+  player: Player,
+  round: RoundData,
+  correctVoterIds: string[],
+  caughtImposterIds: string[],
+): number {
+  const isImposter = round.imposterIds.includes(player.id)
+  if (isImposter) {
+    return caughtImposterIds.includes(player.id) ? 0 : IMPOSTER_WIN_POINTS
+  }
+  return correctVoterIds.includes(player.id) ? CREW_WIN_POINTS : 0
+}
+
+export function applyManualRoundScore(
+  score: Record<string, number>,
+  players: Player[],
+  round: RoundData,
+  correctVoterIds: string[],
+  caughtImposterIds: string[],
+): Record<string, number> {
+  const next = { ...score }
+  for (const p of players) {
+    next[p.id] =
+      (next[p.id] ?? 0) + manualRoundPointsFor(p, round, correctVoterIds, caughtImposterIds)
+  }
+  return next
+}

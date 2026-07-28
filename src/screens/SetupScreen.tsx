@@ -230,6 +230,29 @@ export function SetupScreen({
         </AnimatePresence>
       </motion.div>
 
+      <motion.div
+        custom={4}
+        variants={cardVariants}
+        initial="hidden"
+        animate="show"
+        className="rounded-2xl bg-white p-5 shadow-sm"
+      >
+        <label className="flex items-center justify-between">
+          <span className="font-semibold text-slate-700">Stemronde in de app</span>
+          <input
+            type="checkbox"
+            checked={config.votingEnabled}
+            onChange={(e) => onChange({ votingEnabled: e.target.checked })}
+            className="h-6 w-6 accent-violet-600"
+          />
+        </label>
+        <p className="mt-1 text-sm text-slate-500">
+          {config.votingEnabled
+            ? 'Elke speler stemt op de telefoon, om de beurt.'
+            : 'Stem in het echt (bijv. door te wijzen) en vul daarna in één keer in wie goed stemde en of de imposter gepakt is.'}
+        </p>
+      </motion.div>
+
       <Button onClick={handleStart}>Start ronde</Button>
 
       {hasProgress && (

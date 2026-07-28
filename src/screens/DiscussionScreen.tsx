@@ -9,6 +9,7 @@ interface DiscussionScreenProps {
   players: Player[]
   startingPlayerId: string | null
   onStartVoting: () => void
+  onStartManualResult: () => void
   onBackToReveal: () => void
   onStop: () => void
 }
@@ -26,6 +27,7 @@ export function DiscussionScreen({
   players,
   startingPlayerId,
   onStartVoting,
+  onStartManualResult,
   onBackToReveal,
   onStop,
 }: DiscussionScreenProps) {
@@ -110,11 +112,14 @@ export function DiscussionScreen({
       )}
 
       <p className="max-w-xs text-xs text-slate-400">
-        Winnen: de crew wint als de meest gestemde speler écht de imposter is. Bij een fout of
-        een gelijke stand ontsnapt de imposter.
+        {config.votingEnabled
+          ? 'Winnen: de crew wint als de meest gestemde speler(s) écht de imposter(s) zijn. Bij een fout of een gelijke stand ontsnapt de imposter.'
+          : 'Stem nu in het echt (bijv. door te wijzen) en vul daarna de uitslag in.'}
       </p>
 
-      <Button onClick={onStartVoting}>Start stemronde</Button>
+      <Button onClick={config.votingEnabled ? onStartVoting : onStartManualResult}>
+        {config.votingEnabled ? 'Start stemronde' : 'Stemmen gedaan, vul uitslag in'}
+      </Button>
 
       <button
         onClick={onBackToReveal}

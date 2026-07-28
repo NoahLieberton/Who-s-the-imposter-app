@@ -26,6 +26,10 @@ export interface GameConfig {
   categories: ConcreteCategory[]
   discussionTimerEnabled: boolean
   discussionTimerSeconds: number
+  /** When false, skip the app's pass-and-play voting round in favor of a
+   * single manual-entry screen for groups voting in real life (e.g. by
+   * pointing). */
+  votingEnabled: boolean
 }
 
 export interface Vote {
@@ -40,7 +44,14 @@ export interface RoundData {
   imposterIds: string[]
 }
 
-export type Screen = 'setup' | 'reveal' | 'discussion' | 'voting' | 'results'
+export type Screen = 'setup' | 'reveal' | 'discussion' | 'voting' | 'manual-result' | 'results'
+
+export interface ManualResult {
+  /** Non-imposter player ids whose real-life guess landed on an actual imposter. */
+  correctVoterIds: string[]
+  /** Imposter player ids the group actually caught in real life. */
+  caughtImposterIds: string[]
+}
 
 export interface GameState {
   screen: Screen
@@ -56,4 +67,6 @@ export interface GameState {
   score: Record<string, number>
   /** Secret words already used this game, to avoid repeats until a category is exhausted. */
   usedWords: string[]
+  /** Set when the round was scored via manual entry instead of app voting. */
+  manualResult: ManualResult | null
 }

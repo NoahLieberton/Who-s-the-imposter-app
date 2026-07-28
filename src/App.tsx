@@ -6,6 +6,7 @@ import { SetupScreen } from './screens/SetupScreen'
 import { RoleRevealScreen } from './screens/RoleRevealScreen'
 import { DiscussionScreen } from './screens/DiscussionScreen'
 import { VotingScreen } from './screens/VotingScreen'
+import { ManualResultScreen } from './screens/ManualResultScreen'
 import { ResultsScreen } from './screens/ResultsScreen'
 
 const BACKGROUND_BY_SCREEN: Record<string, string> = {
@@ -13,6 +14,7 @@ const BACKGROUND_BY_SCREEN: Record<string, string> = {
   reveal: 'from-violet-100 via-violet-50 to-white',
   discussion: 'from-amber-50 via-white to-white',
   voting: 'from-violet-50 via-white to-white',
+  'manual-result': 'from-violet-50 via-white to-white',
   results: 'from-slate-50 via-white to-white',
 }
 
@@ -30,7 +32,9 @@ function App() {
             🕵️ WHO'S THE IMPOSTER
           </p>
         )}
-        {state.screen !== 'setup' && <ProgressSteps current={state.screen} />}
+        {state.screen !== 'setup' && (
+          <ProgressSteps current={state.screen === 'manual-result' ? 'voting' : state.screen} />
+        )}
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -71,7 +75,18 @@ function App() {
                 players={state.players}
                 startingPlayerId={state.startingPlayerId}
                 onStartVoting={() => dispatch({ type: 'START_VOTING' })}
+                onStartManualResult={() => dispatch({ type: 'START_MANUAL_RESULT' })}
                 onBackToReveal={() => dispatch({ type: 'BACK_TO_REVEAL' })}
+                onStop={() => dispatch({ type: 'STOP_ROUND' })}
+              />
+            )}
+
+            {state.screen === 'manual-result' && state.round && (
+              <ManualResultScreen
+                players={state.players}
+                round={state.round}
+                onSubmit={(result) => dispatch({ type: 'SUBMIT_MANUAL_RESULT', result })}
+                onBackToDiscussion={() => dispatch({ type: 'BACK_TO_DISCUSSION' })}
                 onStop={() => dispatch({ type: 'STOP_ROUND' })}
               />
             )}
@@ -99,6 +114,7 @@ function App() {
                 players={state.players}
                 round={state.round}
                 votes={state.votes}
+                manualResult={state.manualResult}
                 score={state.score}
                 onPlayAgain={() => dispatch({ type: 'RESTART_SAME_PLAYERS' })}
                 onNewGame={() => dispatch({ type: 'RESET_ALL' })}

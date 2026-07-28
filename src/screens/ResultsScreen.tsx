@@ -6,10 +6,12 @@ import {
   IMPOSTER_WIN_POINTS,
   computeResult,
   getMostVotedPlayerIds,
+  manualRoundPointsFor,
+  manualRoundResult,
   roundPointsFor,
   tallyVotes,
 } from '../game/gameLogic'
-import type { Player, RoundData, Vote } from '../types'
+import type { ManualResult, Player, RoundData, Vote } from '../types'
 import { Button } from '../components/Button'
 import { Confetti } from '../components/Confetti'
 import { playLose, playWin } from '../lib/sound'
@@ -18,6 +20,7 @@ interface ResultsScreenProps {
   players: Player[]
   round: RoundData
   votes: Vote[]
+  manualResult: ManualResult | null
   score: Record<string, number>
   onPlayAgain: () => void
   onNewGame: () => void
@@ -31,16 +34,17 @@ export function ResultsScreen({
   players,
   round,
   votes,
+  manualResult,
   score,
   onPlayAgain,
   onNewGame,
 }: ResultsScreenProps) {
-  const tally = tallyVotes(votes)
-  const mostVotedIds = getMostVotedPlayerIds(tally, round.imposterIds.length)
-  const { tie, totalImposters, caughtCount, allCaught, noneCaught } = computeResult(
-    round,
-    mostVotedIds,
-  )
+  const isManual = manualResult !== null
+  const tally = isManual ? {} : tallyVotes(votes)
+  const mostVotedIds = isManual ? [] : getMostVotedPlayerIds(tally, round.imposterIds.length)
+  const { tie, totalImposters, caughtCount, allCaught, noneCaught } = isManual
+    ? manualRoundResult(round, manualResult.caughtImposterIds)
+    : computeResult(round, mostVotedIds)
   const single = totalImposters === 1
   const partial = !tie && caughtCount > 0 && caughtCount < totalImposters
   const rankedPlayers = [...players].sort(
@@ -130,27 +134,33 @@ export function ResultsScreen({
             </p>
           ),
         },
-        {
-          label: 'Stemmen',
-          labelClass: 'text-violet-500',
-          content: (
-            <ul className="mt-2 flex flex-col gap-1">
-              {players.map((p) => (
-                <li key={p.id} className="flex justify-between text-slate-700">
-                  <span>{p.name}</span>
-                  <span className="font-semibold">{tally[p.id] ?? 0}</span>
-                </li>
-              ))}
-            </ul>
-          ),
-        },
+        ...(isManual
+          ? []
+          : [
+              {
+                label: 'Stemmen',
+                labelClass: 'text-violet-500',
+                content: (
+                  <ul className="mt-2 flex flex-col gap-1">
+                    {players.map((p) => (
+                      <li key={p.id} className="flex justify-between text-slate-700">
+                        <span>{p.name}</span>
+                        <span className="font-semibold">{tally[p.id] ?? 0}</span>
+                      </li>
+                    ))}
+                  </ul>
+                ),
+              },
+            ]),
         {
           label: 'Stand (totaalscore)',
           labelClass: 'text-emerald-600',
           content: (
             <ul className="mt-2 flex flex-col gap-1">
               {rankedPlayers.map((p, i) => {
-                const points = roundPointsFor(p, round, mostVotedIds, tie, votes)
+                const points = isManual
+                  ? manualRoundPointsFor(p, round, manualResult.correctVoterIds, manualResult.caughtImposterIds)
+                  : roundPointsFor(p, round, mostVotedIds, tie, votes)
                 return (
                   <li key={p.id} className="flex items-center justify-between text-slate-700">
                     <span>
