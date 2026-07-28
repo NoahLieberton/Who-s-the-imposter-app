@@ -145,7 +145,7 @@ function reducer(state: GameState, action: Action): GameState {
         state.score,
         state.players,
         state.round!,
-        action.result.correctVoterIds,
+        action.result.correctVoteCounts,
         action.result.caughtImposterIds,
       )
       return { ...state, screen: 'results', score, manualResult: action.result }

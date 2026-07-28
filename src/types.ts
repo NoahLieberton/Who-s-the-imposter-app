@@ -47,8 +47,9 @@ export interface RoundData {
 export type Screen = 'setup' | 'reveal' | 'discussion' | 'voting' | 'manual-result' | 'results'
 
 export interface ManualResult {
-  /** Non-imposter player ids whose real-life guess landed on an actual imposter. */
-  correctVoterIds: string[]
+  /** Per non-imposter player id, how many of their real-life guesses landed
+   * on an actual imposter (0 up to the number of imposters in the round). */
+  correctVoteCounts: Record<string, number>
   /** Imposter player ids the group actually caught in real life. */
   caughtImposterIds: string[]
 }

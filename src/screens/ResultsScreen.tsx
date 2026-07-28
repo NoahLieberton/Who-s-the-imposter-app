@@ -159,7 +159,7 @@ export function ResultsScreen({
             <ul className="mt-2 flex flex-col gap-1">
               {rankedPlayers.map((p, i) => {
                 const points = isManual
-                  ? manualRoundPointsFor(p, round, manualResult.correctVoterIds, manualResult.caughtImposterIds)
+                  ? manualRoundPointsFor(p, round, manualResult.correctVoteCounts, manualResult.caughtImposterIds)
                   : roundPointsFor(p, round, mostVotedIds, tie, votes)
                 return (
                   <li key={p.id} className="flex items-center justify-between text-slate-700">

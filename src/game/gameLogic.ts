@@ -175,34 +175,36 @@ export function manualRoundResult(round: RoundData, caughtImposterIds: string[])
 }
 
 /**
- * Manual-entry equivalent of roundPointsFor: a real-life vote (e.g. by
- * pointing) only supports one guess per person, so a crew member scores at
- * most one point per round here rather than one per imposter.
+ * Manual-entry equivalent of roundPointsFor: with multiple imposters a
+ * real-life voter can still point more than once (once per suspect, same
+ * as the app's digital voting), so this scales the same way — one point
+ * per correct guess, capped at the number of imposters in the round.
  */
 export function manualRoundPointsFor(
   player: Player,
   round: RoundData,
-  correctVoterIds: string[],
+  correctVoteCounts: Record<string, number>,
   caughtImposterIds: string[],
 ): number {
   const isImposter = round.imposterIds.includes(player.id)
   if (isImposter) {
     return caughtImposterIds.includes(player.id) ? 0 : IMPOSTER_WIN_POINTS
   }
-  return correctVoterIds.includes(player.id) ? CREW_WIN_POINTS : 0
+  const correctVotes = Math.min(correctVoteCounts[player.id] ?? 0, round.imposterIds.length)
+  return correctVotes * CREW_WIN_POINTS
 }
 
 export function applyManualRoundScore(
   score: Record<string, number>,
   players: Player[],
   round: RoundData,
-  correctVoterIds: string[],
+  correctVoteCounts: Record<string, number>,
   caughtImposterIds: string[],
 ): Record<string, number> {
   const next = { ...score }
   for (const p of players) {
     next[p.id] =
-      (next[p.id] ?? 0) + manualRoundPointsFor(p, round, correctVoterIds, caughtImposterIds)
+      (next[p.id] ?? 0) + manualRoundPointsFor(p, round, correctVoteCounts, caughtImposterIds)
   }
   return next
 }
